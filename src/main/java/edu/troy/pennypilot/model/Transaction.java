@@ -1,4 +1,4 @@
-package edu.troy.pennyPilot.model;
+package edu.troy.pennypilot.model;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.GeneratedValue;
@@ -29,6 +29,6 @@ public class Transaction {
     private ExpenseCategory expenseCategory;
     private String description;
 
-    public Transaction() {
+    Transaction() {
     }
 }

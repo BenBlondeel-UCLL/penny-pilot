@@ -1,9 +1,9 @@
-package edu.troy.pennyPilot;
+package edu.troy.pennypilot;
 
-import edu.troy.pennyPilot.model.ExpenseCategory;
-import edu.troy.pennyPilot.model.Transaction;
-import edu.troy.pennyPilot.model.TransactionType;
-import edu.troy.pennyPilot.service.TransactionService;
+import edu.troy.pennypilot.model.ExpenseCategory;
+import edu.troy.pennypilot.model.Transaction;
+import edu.troy.pennypilot.model.TransactionType;
+import edu.troy.pennypilot.service.TransactionService;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -45,11 +44,8 @@ public class JavaFxApplication extends Application {
         Button oke = new Button("OKE");
         oke.setOnAction(actionEvent -> transactionList.remove(transactionList.size()-1));
         VBox box = new VBox(new ListView<Transaction>(transactionList), oke);
-        stage.setScene(new Scene(box, 200, 200));
+        stage.setScene(new Scene(box, 800, 600));
         stage.show();
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
 }

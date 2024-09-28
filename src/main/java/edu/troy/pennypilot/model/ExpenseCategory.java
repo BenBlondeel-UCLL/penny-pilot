@@ -1,4 +1,4 @@
-package edu.troy.pennyPilot.model;
+package edu.troy.pennypilot.model;
 
 public enum ExpenseCategory {
     HOUSING,

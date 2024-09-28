@@ -1,4 +1,4 @@
-package edu.troy.pennyPilot;
+package edu.troy.pennypilot;
 
 import javafx.application.Application;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

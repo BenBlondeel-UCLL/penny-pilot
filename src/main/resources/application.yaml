@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: Penny Pilot
+# H2 DB
+# PUTS DATA IN A FILE usersDB IN A MAP /data/DB IN YOUR PROJECT
+  datasource:
+    url: jdbc:h2:file:./data/DB;AUTO_SERVER=TRUE
+    username: test
+    name: pennyPilotDB
+  jpa:
+    hibernate:
+      ddl-auto: create
+# FOR DEBUGGING INFO
+    show-sql: true
+    open-in-view: false
+

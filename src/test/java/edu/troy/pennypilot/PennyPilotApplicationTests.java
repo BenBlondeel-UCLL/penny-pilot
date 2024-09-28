@@ -1,4 +1,4 @@
-package edu.troy.pennyPilot;
+package edu.troy.pennypilot;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
