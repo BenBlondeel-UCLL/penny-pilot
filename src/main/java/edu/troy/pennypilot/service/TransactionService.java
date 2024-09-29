@@ -22,4 +22,8 @@ public class TransactionService {
     public Transaction addTransaction(Transaction newTransaction) {
         return transactionRepo.save(newTransaction);
     }
+
+    public void deleteTransactionById(Long id) {
+        transactionRepo.deleteById(id);
+    }
 }

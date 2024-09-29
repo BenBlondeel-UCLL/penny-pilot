@@ -1,5 +1,6 @@
 package edu.troy.pennypilot;
 
+import edu.troy.pennypilot.dialog.TransactionDialog;
 import edu.troy.pennypilot.model.ExpenseCategory;
 import edu.troy.pennypilot.model.Transaction;
 import edu.troy.pennypilot.model.TransactionType;
@@ -9,6 +10,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -42,10 +44,23 @@ public class JavaFxApplication extends Application {
         transactionService.addTransaction(Transaction.builder().amount(-50).description("shirt").date(LocalDate.now()).type(TransactionType.EXPENSE).expenseCategory(ExpenseCategory.SHOPPING).build());
         ObservableList<Transaction> transactionList = FXCollections.observableArrayList(transactionService.getAllTransactions());
         Button oke = new Button("OKE");
-        oke.setOnAction(actionEvent -> transactionList.remove(transactionList.size()-1));
-        VBox box = new VBox(new ListView<Transaction>(transactionList), oke);
-        stage.setScene(new Scene(box, 800, 600));
+        oke.setOnAction(actionEvent -> {
+            transactionService.deleteTransactionById(transactionList.remove(transactionList.size()-1).getId());
+            log.info("Db: {}", transactionService.getAllTransactions());
+        });
+        Dialog transactionDialog = new TransactionDialog();
+        Button create = new Button("Create"); 
+        create.setOnAction(actionEvent -> {
+            transactionDialog.showAndWait().ifPresent(response -> {
+                log.info("dome response{}", response);
+            });
+        });
+        VBox box = new VBox(new ListView<Transaction>(transactionList), oke, create);
+        stage.setScene(new Scene(box, 200, 200));
         stage.show();
     }
 
+    public static void main(String[] args) {
+        launch(args);
+    }
 }
