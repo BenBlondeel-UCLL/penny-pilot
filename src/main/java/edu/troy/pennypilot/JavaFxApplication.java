@@ -17,6 +17,7 @@ import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -51,8 +52,11 @@ public class JavaFxApplication extends Application {
         Dialog transactionDialog = new TransactionDialog();
         Button create = new Button("Create"); 
         create.setOnAction(actionEvent -> {
-            transactionDialog.showAndWait().ifPresent(response -> {
-                log.info("dome response{}", response);
+            Optional<Transaction> result = transactionDialog.showAndWait();
+            result.ifPresent(response -> {
+                log.info("Transaction: {}", response);
+                transactionService.addTransaction(response);
+                transactionList.add(response);
             });
         });
         VBox box = new VBox(new ListView<Transaction>(transactionList), oke, create);
