@@ -19,6 +19,14 @@ public class TransactionService {
         return transactionRepo.findAll();
     }
 
+    public Transaction getTransactionById(Long id){
+        return transactionRepo.getTransactionById(id);
+    }
+
+    public Transaction getTranasctionByDescription(String description){
+        return transactionRepo.findByDescription(description);
+    }
+
     public Transaction addTransaction(Transaction newTransaction) {
         return transactionRepo.save(newTransaction);
     }

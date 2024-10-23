@@ -39,10 +39,19 @@ public class JavaFxApplication extends Application {
         transactionService = applicationContext.getBean(TransactionService.class);
     }
 
+    public void insertData (){
+        Transaction trans1 = Transaction.builder().amount(-100).description("shoes").date(LocalDate.now()).type(TransactionType.EXPENSE).expenseCategory(ExpenseCategory.SHOPPING).build();     
+        Transaction trans2 = Transaction.builder().amount(-50).description("shirt").date(LocalDate.now()).type(TransactionType.EXPENSE).expenseCategory(ExpenseCategory.SHOPPING).build();
+        if (transactionService.getTranasctionByDescription("shoes") == null) {
+            transactionService.addTransaction(trans1);
+        }
+        if (transactionService.getTranasctionByDescription("shirt") == null) {
+            transactionService.addTransaction(trans2);
+        }
+    }
+
     @Override
     public void start(Stage stage) throws Exception {
-        transactionService.addTransaction(Transaction.builder().amount(-100).description("shoes").date(LocalDate.now()).type(TransactionType.EXPENSE).expenseCategory(ExpenseCategory.SHOPPING).build());
-        transactionService.addTransaction(Transaction.builder().amount(-50).description("shirt").date(LocalDate.now()).type(TransactionType.EXPENSE).expenseCategory(ExpenseCategory.SHOPPING).build());
         ObservableList<Transaction> transactionList = FXCollections.observableArrayList(transactionService.getAllTransactions());
         Button oke = new Button("OKE");
         oke.setOnAction(actionEvent -> {
