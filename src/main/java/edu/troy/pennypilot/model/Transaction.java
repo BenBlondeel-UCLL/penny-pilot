@@ -14,7 +14,6 @@ import java.time.LocalDate;
 
 @AllArgsConstructor
 @Builder @Getter @Setter
-@ToString
 @Entity
 @Table(name = "transactions")
 public class Transaction {
@@ -33,6 +32,6 @@ public class Transaction {
     }
 
     public String toString() {
-        return "Date: " + date + " Type: " + type + " Amount: " + amount + " Description: " + description;
+        return "Date: " + date + " Type: " + (type==type.INCOME ? incomeCategory : expenseCategory) + " Amount: " + amount + " Description: " + description;
     }
 }

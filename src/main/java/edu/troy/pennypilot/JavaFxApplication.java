@@ -9,6 +9,7 @@ import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
@@ -20,6 +21,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
@@ -33,6 +35,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
+import org.kordamp.ikonli.javafx.FontIcon;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -77,17 +81,12 @@ public class JavaFxApplication extends Application {
 
 
         // Transaction Tab
-        ObservableList<Transaction> incomeTransactionList = FXCollections.observableArrayList(transactionService.getAllIncomeTransactions());
-        ObservableList<Transaction> expenseTransactionList = FXCollections.observableArrayList(transactionService.getAllExpenseTransactions());
-
-        Button oke = new Button("Delete");
-        oke.setOnAction(actionEvent -> {
-            transactionService.deleteTransactionById(incomeTransactionList.remove(incomeTransactionList.size()-1).getId());
-            log.info("Db: {}", transactionService.getAllTransactions());
-        });
+        ObservableList<Transaction> transactionList = FXCollections.observableArrayList(transactionService.getAllTransactions());
+        FilteredList<Transaction> incomeTransactionList = new FilteredList<>(transactionList, transaction -> transaction.getType() == TransactionType.INCOME);
+        FilteredList<Transaction> expenseTransactionList = new FilteredList<>(transactionList, transaction -> transaction.getType() == TransactionType.EXPENSE);
 
         // Create Transaction
-        Dialog transactionDialog = new TransactionDialog();
+        Dialog transactionDialog = new TransactionDialog(null);
         Button create = new Button("Create"); 
         create.setOnAction(actionEvent -> {
             Optional<Transaction> result = transactionDialog.showAndWait();
@@ -106,10 +105,12 @@ public class JavaFxApplication extends Application {
         incomeListView.prefWidthProperty().bind(stage.widthProperty().divide(2));
         ListView expenseListView = new ListView<Transaction>(expenseTransactionList);
         expenseListView.prefWidthProperty().bind(stage.widthProperty().divide(2));
+        incomeListView.setContextMenu(buildContextMenu(incomeListView, transactionList));
+        expenseListView.setContextMenu(buildContextMenu(expenseListView, transactionList));
         HBox listbox = new HBox(incomeListView, expenseListView);
         listbox.setAlignment(Pos.CENTER);
         listbox.setSpacing(10);
-        HBox buttonBox = new HBox(create, oke);
+        HBox buttonBox = new HBox(create);
         VBox vbox = new VBox(listbox, buttonBox);
         Tab transactionTab = new Tab("Transactions", vbox);
         transactionTab.setClosable(false);
@@ -145,6 +146,35 @@ public class JavaFxApplication extends Application {
         stage.setTitle("Penny Pilot");
         stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/money.jpg")));
         stage.show();
+    }
+
+
+
+    ContextMenu buildContextMenu(ListView<Transaction> lv, ObservableList<Transaction> transactionList) {
+        var edit = new MenuItem("Edit Transaction", new FontIcon(FontAwesomeSolid.EDIT));
+        edit.setOnAction(event -> {
+            Transaction selected = lv.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                log.info("Edit: {}", selected);
+                Dialog dialog = new TransactionDialog(selected);
+                Optional<Transaction> result = dialog.showAndWait();
+                result.ifPresent(response -> {
+                    transactionService.addTransaction(response);
+                    transactionList.set(transactionList.indexOf(selected), response);
+                });
+            }
+        });
+
+        var delete = new MenuItem("Delete Transaction", new FontIcon(FontAwesomeSolid.TRASH));
+        delete.setOnAction(event -> {
+            int selectedIndex = lv.getSelectionModel().getSelectedIndex();
+            if (selectedIndex != -1) {
+                Transaction removed = lv.getItems().remove(selectedIndex);
+                transactionService.deleteTransactionById(removed.getId());
+            }
+        });
+
+        return new ContextMenu(edit, delete);
     }
 
     public static void main(String[] args) {
