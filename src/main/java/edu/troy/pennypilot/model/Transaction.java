@@ -31,4 +31,8 @@ public class Transaction {
 
     Transaction() {
     }
+
+    public String toString() {
+        return "Date: " + date + " Type: " + type + " Amount: " + amount + " Description: " + description;
+    }
 }

@@ -1,6 +1,7 @@
 package edu.troy.pennypilot.service;
 
 import edu.troy.pennypilot.model.Transaction;
+import edu.troy.pennypilot.model.TransactionType;
 import edu.troy.pennypilot.repo.TransactionRepo;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,14 @@ public class TransactionService {
 
     public List<Transaction> getAllTransactions(){
         return transactionRepo.findAll();
+    }
+
+    public List<Transaction> getAllIncomeTransactions(){
+        return transactionRepo.findAllByType(TransactionType.INCOME);
+    }
+
+    public List<Transaction> getAllExpenseTransactions(){
+        return transactionRepo.findAllByType(TransactionType.EXPENSE);
     }
 
     public Transaction getTransactionById(Long id){
