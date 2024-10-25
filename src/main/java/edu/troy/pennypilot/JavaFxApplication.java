@@ -93,11 +93,7 @@ public class JavaFxApplication extends Application {
             result.ifPresent(response -> {
                 log.info("Transaction: {}", response);
                 transactionService.addTransaction(response);
-                if (response.getType() == TransactionType.INCOME) {
-                    incomeTransactionList.add(response);
-                } else {
-                    expenseTransactionList.add(response);
-                }
+                transactionList.add(response);
             });
         });
 
