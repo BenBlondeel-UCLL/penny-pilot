@@ -1,14 +1,10 @@
 package edu.troy.pennypilot.model;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
+
 
 import java.time.LocalDate;
 
@@ -22,9 +18,12 @@ public class Transaction {
     public Long id;
 
     private LocalDate date;
+//    @Enumerated(EnumType.STRING)
     private TransactionType type;
     private float amount;
+//    @Enumerated(EnumType.STRING)
     private IncomeCategory incomeCategory;
+//    @Enumerated(EnumType.STRING)
     private ExpenseCategory expenseCategory;
     private String description;
 

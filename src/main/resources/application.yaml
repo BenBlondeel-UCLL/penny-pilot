@@ -13,4 +13,6 @@ spring:
 # FOR DEBUGGING INFO
     show-sql: true
     open-in-view: false
+  flyway:
+    enabled: false
 
