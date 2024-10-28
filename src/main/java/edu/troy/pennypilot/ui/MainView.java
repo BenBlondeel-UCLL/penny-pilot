@@ -3,6 +3,7 @@ package edu.troy.pennypilot.ui;
 import edu.troy.pennypilot.JavaFxApplication;
 import edu.troy.pennypilot.dialog.TransactionDialog;
 import edu.troy.pennypilot.model.ExpenseCategory;
+import edu.troy.pennypilot.model.IncomeCategory;
 import edu.troy.pennypilot.model.Transaction;
 import edu.troy.pennypilot.model.TransactionType;
 import edu.troy.pennypilot.service.TransactionService;
@@ -10,11 +11,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
+import javafx.geometry.Side;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.text.Text;
@@ -99,7 +102,26 @@ public class MainView {
         statisticsTab.setGraphic(new FontIcon(FontAwesomeSolid.CHART_PIE));
         statisticsTab.setOnSelectionChanged(event -> {
             if (statisticsTab.isSelected()) {
-                ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
+                // income pie chart
+                ObservableList<PieChart.Data> incomePieChartData = FXCollections.observableArrayList();
+                List<Transaction> IncomeTransactions = transactionService.getAllIncomeTransactions();
+                double totalIncome = IncomeTransactions.stream().mapToDouble(Transaction::getAmount).sum();
+                for (IncomeCategory category : IncomeCategory.values()) {
+                    double categoryTotal = IncomeTransactions.stream()
+                            .filter(transaction -> transaction.getIncomeCategory() == category)
+                            .mapToDouble(Transaction::getAmount)
+                            .sum();
+                    if (categoryTotal != 0) {
+                        double percentage = (Math.abs(categoryTotal) / Math.abs(totalIncome)) * 100;
+                        incomePieChartData.add(new PieChart.Data(category.name() + ": " + String.format("%.2f", percentage) + "%", Math.abs(categoryTotal)));
+                    }
+                }
+                final PieChart incomeChart = new PieChart(incomePieChartData);
+                incomeChart.setTitle("Income");
+                incomeChart.setLabelsVisible(false);
+
+                // expense pie chart
+                ObservableList<PieChart.Data> expensePieChartData = FXCollections.observableArrayList();
                 List<Transaction> Expensetransactions = transactionService.getAllExpenseTransactions();
                 double totalExpenses = Expensetransactions.stream().mapToDouble(Transaction::getAmount).sum();
                 for (ExpenseCategory category : ExpenseCategory.values()) {
@@ -109,11 +131,22 @@ public class MainView {
                             .sum();
                     if (categoryTotal != 0) {
                         double percentage = (Math.abs(categoryTotal) / Math.abs(totalExpenses)) * 100;
-                        pieChartData.add(new PieChart.Data(category.name() + ": " + String.format("%.2f", percentage) + "%", Math.abs(categoryTotal)));
+                        expensePieChartData.add(new PieChart.Data(category.name() + ": " + String.format("%.2f", percentage) + "%", Math.abs(categoryTotal)));
                     }
                 }
-                final PieChart chart = new PieChart(pieChartData);
-                statisticsTab.setContent(chart);
+                final PieChart expenseChart = new PieChart(expensePieChartData);
+                expenseChart.setTitle("Expenses");
+                expenseChart.setLabelsVisible(false);
+
+                // add to grid pane
+                GridPane pane = new GridPane();
+                pane.setPadding(new Insets(10));
+                pane.addRow(0, incomeChart, expenseChart);
+                GridPane.setHgrow(incomeChart, Priority.ALWAYS);
+                GridPane.setVgrow(incomeChart, Priority.ALWAYS);
+                GridPane.setHgrow(expenseChart, Priority.ALWAYS);
+                GridPane.setVgrow(expenseChart, Priority.ALWAYS);
+                statisticsTab.setContent(pane);
             }
         });
 

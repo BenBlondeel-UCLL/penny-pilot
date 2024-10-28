@@ -12,5 +12,6 @@ public enum ExpenseCategory {
     DEBT,
     INSURANCE,
     TAXES,
+    SAVINGS,
     OTHER
 }
