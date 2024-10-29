@@ -1,11 +1,13 @@
 package edu.troy.pennypilot.ui;
 
 import edu.troy.pennypilot.JavaFxApplication;
+import edu.troy.pennypilot.dialog.BudgetDialog;
 import edu.troy.pennypilot.dialog.TransactionDialog;
 import edu.troy.pennypilot.model.ExpenseCategory;
 import edu.troy.pennypilot.model.IncomeCategory;
 import edu.troy.pennypilot.model.Transaction;
 import edu.troy.pennypilot.model.TransactionType;
+import edu.troy.pennypilot.service.BudgetService;
 import edu.troy.pennypilot.service.TransactionService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -37,6 +39,7 @@ import java.util.List;
 public class MainView {
 
     private final TransactionService transactionService;
+    private final BudgetService budgetService;
 
     @EventListener
     void onStageReady(JavaFxApplication.StageReadyEvent event) {
@@ -56,7 +59,7 @@ public class MainView {
         homeTab.setGraphic( new FontIcon(FontAwesomeSolid.HOME));
         homeTab.setClosable(false);
 
-        return new TabPane(homeTab, transactionTab(), statisticsTab());
+        return new TabPane(homeTab, transactionTab(), budgetTab(), statisticsTab());
     }
 
     Tab transactionTab() {
@@ -93,6 +96,18 @@ public class MainView {
         transactionTab.setGraphic(new FontIcon(FontAwesomeSolid.MONEY_BILL));
 
         return transactionTab;
+    }
+
+    Tab budgetTab(){
+        Button add = new Button("Add", new FontIcon(FontAwesomeSolid.PLUS_CIRCLE));
+        add.setOnAction(actionEvent -> new BudgetDialog(null).showAndWait().ifPresent(response -> {
+            log.info("Budget: {}", response);
+            budgetService.addBudget(response);
+        }));
+        Tab budgetTab = new Tab("Budget", add);
+        budgetTab.setClosable(false);
+        budgetTab.setGraphic(new FontIcon(FontAwesomeSolid.COINS));
+        return budgetTab;
     }
 
     Tab statisticsTab() {
