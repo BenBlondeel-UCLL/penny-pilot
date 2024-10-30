@@ -7,6 +7,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -22,6 +23,13 @@ public class TransactionService {
 
     public List<Transaction> getAllIncomeTransactions(){
         return transactionRepo.findAllByType(TransactionType.INCOME);
+    }
+
+    public float getTotalThisMonth(TransactionType type){
+        return transactionRepo.findByTypeAndDateBetween(type, LocalDate.now().withDayOfMonth(1), LocalDate.now().withDayOfMonth(LocalDate.now().lengthOfMonth()))
+                .stream()
+                .map(Transaction::getAmount)
+                .reduce(0.0f, Float::sum);
     }
 
     public List<Transaction> getAllExpenseTransactions(){

@@ -3,6 +3,7 @@ package edu.troy.pennypilot.ui;
 import edu.troy.pennypilot.JavaFxApplication;
 import edu.troy.pennypilot.dialog.BudgetDialog;
 import edu.troy.pennypilot.dialog.TransactionDialog;
+import edu.troy.pennypilot.model.Budget;
 import edu.troy.pennypilot.model.ExpenseCategory;
 import edu.troy.pennypilot.model.IncomeCategory;
 import edu.troy.pennypilot.model.Transaction;
@@ -19,7 +20,11 @@ import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.text.Text;
@@ -32,6 +37,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.Flow;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -53,13 +59,26 @@ public class MainView {
     }
 
     Parent getRoot() {
-        // Home Tab
-        Text text = new Text("home");
-        Tab homeTab = new Tab("Home", text);
-        homeTab.setGraphic( new FontIcon(FontAwesomeSolid.HOME));
-        homeTab.setClosable(false);
+        
+        
+        return new TabPane(homeTab(), transactionTab(), budgetTab(), statisticsTab());
+    }
 
-        return new TabPane(homeTab, transactionTab(), budgetTab(), statisticsTab());
+    Tab homeTab() {
+        // Home Tab
+        Tab homeTab = new Tab("Home");
+        homeTab.setOnSelectionChanged(event -> {
+            if (homeTab.isSelected()) {
+                Text text = new Text("income: " + transactionService.getTotalThisMonth(TransactionType.INCOME));
+                FlowPane homePane = new FlowPane(text);
+                homePane.setStyle("-fx-background-image: url('/images/money.jpg'); -fx-background-size: cover;");
+                homeTab.setContent(homePane);
+            }
+        });
+
+        homeTab.setGraphic(new FontIcon(FontAwesomeSolid.HOME));
+        homeTab.setClosable(false);
+        return homeTab;
     }
 
     Tab transactionTab() {
@@ -99,12 +118,22 @@ public class MainView {
     }
 
     Tab budgetTab(){
+        FlowPane tiles = new FlowPane();
         Button add = new Button("Add", new FontIcon(FontAwesomeSolid.PLUS_CIRCLE));
         add.setOnAction(actionEvent -> new BudgetDialog(null).showAndWait().ifPresent(response -> {
             log.info("Budget: {}", response);
-            budgetService.addBudget(response);
+            Budget budget = budgetService.addBudget(response);
+            tiles.getChildren().add(new BudgetTile(budget));
         }));
-        Tab budgetTab = new Tab("Budget", add);
+
+        BorderPane budgetPane = new BorderPane(tiles);
+        budgetPane.setBottom(add);
+        List<Budget> budgetList = budgetService.getAllBudgets();
+        budgetList.forEach(budget -> { 
+            tiles.getChildren().add(new BudgetTile(budget));
+        });
+
+        Tab budgetTab = new Tab("Budget", budgetPane);
         budgetTab.setClosable(false);
         budgetTab.setGraphic(new FontIcon(FontAwesomeSolid.COINS));
         return budgetTab;
