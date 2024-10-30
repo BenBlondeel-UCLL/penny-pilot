@@ -21,17 +21,6 @@ public class JavaFxApplication extends Application {
                 .run(getParameters().getRaw().toArray(new String[0]));
     }
 
-//    public void insertData (){
-//        Transaction trans1 = Transaction.builder().amount(100).description("shoes").date(LocalDate.now()).type(TransactionType.EXPENSE).expenseCategory(ExpenseCategory.SHOPPING).build();
-//        Transaction trans2 = Transaction.builder().amount(50).description("shirt").date(LocalDate.now()).type(TransactionType.EXPENSE).expenseCategory(ExpenseCategory.SHOPPING).build();
-//        if (transactionService.getTranasctionByDescription("shoes") == null) {
-//            transactionService.addTransaction(trans1);
-//        }
-//        if (transactionService.getTranasctionByDescription("shirt") == null) {
-//            transactionService.addTransaction(trans2);
-//        }
-//    }
-
     @Override
     public void start(Stage stage) throws Exception {
         applicationContext.publishEvent(new StageReadyEvent(stage));

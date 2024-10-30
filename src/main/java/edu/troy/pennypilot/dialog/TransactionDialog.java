@@ -1,52 +1,48 @@
 package edu.troy.pennypilot.dialog;
 
-import java.sql.Date;
-
 import edu.troy.pennypilot.model.ExpenseCategory;
 import edu.troy.pennypilot.model.IncomeCategory;
 import edu.troy.pennypilot.model.Transaction;
 import edu.troy.pennypilot.model.TransactionType;
-import jakarta.persistence.criteria.CriteriaBuilder.In;
 import javafx.collections.FXCollections;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.geometry.Insets;
 import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.util.converter.FloatStringConverter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class TransactionDialog extends Dialog<Transaction> {
     private TextField description;
     private DatePicker date;
-    private ChoiceBox<TransactionType> type;
-    private TextField amount;
+    private RadioButton income;
     private ChoiceBox<Enum> category;
+    private TextFormatter<Float> formatter = new TextFormatter<>(new FloatStringConverter(), 0f, change -> change.getControlNewText().matches("\\d{0,15}(\\.\\d{0,2})?") ? change : null);
 
     public TransactionDialog(Transaction transaction) {
-        uiBuilder(transaction);
         setTitle("Transaction dialog");
         getDialogPane().setHeaderText("Create transaction");
-        type.setOnAction(event -> {
-            if (type.getValue() == TransactionType.INCOME) {
-                category.setItems(FXCollections.observableArrayList(IncomeCategory.values()));
-            } else if (type.getValue() == TransactionType.EXPENSE) {
-                category.setItems(FXCollections.observableArrayList(ExpenseCategory.values()));
-            }
-        });
+        buildUi(transaction);
 
         // Convert result to transaction when SAVE button is clicked
         setResultConverter(buttonType -> {
             if (buttonType.getButtonData() == ButtonData.OK_DONE) {
                 try {
-                    if(category.getValue().getClass() == IncomeCategory.class) {
-                        return Transaction.builder().id(transaction==null ? null : transaction.getId()).description(description.getText()).date(date.getValue()).type(type.getValue()).amount(Float.parseFloat(amount.getText())).incomeCategory((IncomeCategory)category.getValue()).build();
+                    var builder = Transaction.builder()
+                            .id(transaction == null ? null : transaction.getId())
+                            .description(description.getText())
+                            .date(date.getValue())
+                            .type(income.isSelected() ? TransactionType.INCOME : TransactionType.EXPENSE)
+                            .amount(formatter.getValue());
+
+                    if (income.isSelected()) {
+                        builder.incomeCategory((IncomeCategory) category.getValue());
                     } else {
-                        return Transaction.builder().id(transaction==null ? null : transaction.getId()).description(description.getText()).date(date.getValue()).type(type.getValue()).amount(Float.parseFloat(amount.getText())).expenseCategory((ExpenseCategory)category.getValue()).build();
+                        builder.expenseCategory((ExpenseCategory) category.getValue());
                     }
+
+                    return builder.build();
                 } catch (NumberFormatException e) {
                     getDialogPane().setHeaderText("alles is omzeep");
                 }
@@ -55,27 +51,52 @@ public class TransactionDialog extends Dialog<Transaction> {
         });
     }
 
-    private void uiBuilder(Transaction transaction) {
+    private void buildUi(Transaction transaction) {
         description = new TextField();
         date = new DatePicker();
-        type = new ChoiceBox<>(FXCollections.observableArrayList(TransactionType.values())); 
-        amount = new TextField();
+        ToggleGroup toggleGroup = new ToggleGroup();
+        toggleGroup.selectedToggleProperty().addListener((obs, o, n) -> {
+            category.setItems(FXCollections.observableArrayList(income.isSelected() ? IncomeCategory.values() : ExpenseCategory.values()));
+            if (transaction != null) {
+                category.setValue(income.isSelected() ? transaction.getIncomeCategory() : transaction.getExpenseCategory());
+            }
+        });
+        income = new RadioButton("Income");
+        income.setToggleGroup(toggleGroup);
+        RadioButton expense = new RadioButton("Expense");
+        expense.setToggleGroup(toggleGroup);
+        TextField amount = new TextField();
+        amount.setTextFormatter(formatter);
         category = new ChoiceBox<>();
+        category.minWidthProperty().bind(description.widthProperty());
+
         if (transaction != null) {
             description.setText(transaction.getDescription());
             date.setValue(transaction.getDate());
-            type.setValue(transaction.getType());
             amount.setText(String.valueOf(transaction.getAmount()));
             if (transaction.getType() == TransactionType.INCOME) {
-                category.setItems(FXCollections.observableArrayList(IncomeCategory.values()));
-                category.setValue(transaction.getIncomeCategory());
+                income.setSelected(true);
             } else if (transaction.getType() == TransactionType.EXPENSE) {
-                category.setItems(FXCollections.observableArrayList(ExpenseCategory.values()));
-                category.setValue(transaction.getExpenseCategory());
+                expense.setSelected(true);
             }
+        } else {
+            expense.setSelected(true);
         }
-        VBox vBox = new VBox(new Label("Date: "), date, new Label("Income Type: "), type, new Label("Amount: "), amount, new Label("Description: "), description, new Label("Category: "), category);
-        getDialogPane().setContent(vBox);
+
+        GridPane form = new GridPane(5,10);
+        form.setPadding(new Insets(10));
+        form.addRow(0, new Label("Date: "), date);
+        form.addRow(1, new Label("Type: "), income, expense);
+        form.addRow(2, new Label("Amount: "), amount);
+        form.addRow(3, new Label("Description: "), description);
+        form.addRow(4, new Label("Category: "), category);
+
+        GridPane.setColumnSpan(date, 2);
+        GridPane.setColumnSpan(amount, 2);
+        GridPane.setColumnSpan(description, 2);
+        GridPane.setColumnSpan(category, 2);
+
+        getDialogPane().setContent(form);
         getDialogPane().getButtonTypes().addAll(new ButtonType("SAVE", ButtonData.OK_DONE), ButtonType.CANCEL);
     }
 }

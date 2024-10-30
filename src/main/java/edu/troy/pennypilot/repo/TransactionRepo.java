@@ -8,11 +8,12 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 
 public interface TransactionRepo extends JpaRepository<Transaction, Long> {
     Transaction getTransactionById(Long id);
-    Transaction findByDescription(String description);
+    Optional<Transaction> findByDescription(String description);
     List<Transaction> findAllByType(TransactionType income);
 
     

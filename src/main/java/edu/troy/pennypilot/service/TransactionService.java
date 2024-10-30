@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -17,11 +18,11 @@ public class TransactionService {
 
     private final TransactionRepo transactionRepo;
 
-    public List<Transaction> getAllTransactions(){
+    public List<Transaction> getAllTransactions() {
         return transactionRepo.findAll();
     }
 
-    public List<Transaction> getAllIncomeTransactions(){
+    public List<Transaction> getAllIncomeTransactions() {
         return transactionRepo.findAllByType(TransactionType.INCOME);
     }
 
@@ -32,15 +33,15 @@ public class TransactionService {
                 .reduce(0.0f, Float::sum);
     }
 
-    public List<Transaction> getAllExpenseTransactions(){
+    public List<Transaction> getAllExpenseTransactions() {
         return transactionRepo.findAllByType(TransactionType.EXPENSE);
     }
 
-    public Transaction getTransactionById(Long id){
+    public Transaction getTransactionById(Long id) {
         return transactionRepo.getTransactionById(id);
     }
 
-    public Transaction getTranasctionByDescription(String description){
+    public Optional<Transaction> getTransactionByDescription(String description) {
         return transactionRepo.findByDescription(description);
     }
 
