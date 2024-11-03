@@ -3,27 +3,19 @@ package edu.troy.pennypilot.ui;
 import edu.troy.pennypilot.JavaFxApplication;
 import edu.troy.pennypilot.dialog.BudgetDialog;
 import edu.troy.pennypilot.dialog.TransactionDialog;
-import edu.troy.pennypilot.model.Budget;
-import edu.troy.pennypilot.model.ExpenseCategory;
-import edu.troy.pennypilot.model.IncomeCategory;
-import edu.troy.pennypilot.model.Transaction;
-import edu.troy.pennypilot.model.TransactionType;
+import edu.troy.pennypilot.model.*;
 import edu.troy.pennypilot.service.BudgetService;
 import edu.troy.pennypilot.service.TransactionService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
-import javafx.geometry.Side;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -37,7 +29,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.concurrent.Flow;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -50,6 +41,7 @@ public class MainView {
     @EventListener
     void onStageReady(JavaFxApplication.StageReadyEvent event) {
         Scene scene = new Scene(getRoot(), 800, 600);
+        scene.getStylesheets().add("stylesheet.css");
 
         Stage stage = event.getStage();
         stage.setTitle("Penny Pilot");
@@ -65,19 +57,21 @@ public class MainView {
     }
 
     Tab homeTab() {
+        Text text = new Text();
+        text.setId("income");
+        var homePane = new BorderPane(text);
+        homePane.getStyleClass().add("home");
+
         // Home Tab
-        Tab homeTab = new Tab("Home");
+        Tab homeTab = new Tab("Home", homePane);
+        homeTab.setGraphic(new FontIcon(FontAwesomeSolid.HOME));
+        homeTab.setClosable(false);
         homeTab.setOnSelectionChanged(event -> {
             if (homeTab.isSelected()) {
-                Text text = new Text("income: " + transactionService.getTotalThisMonth(TransactionType.INCOME));
-                FlowPane homePane = new FlowPane(text);
-                homePane.setStyle("-fx-background-image: url('/images/money.jpg'); -fx-background-size: cover;");
-                homeTab.setContent(homePane);
+                text.setText("Income: " + transactionService.getTotalThisMonth(TransactionType.INCOME));
             }
         });
 
-        homeTab.setGraphic(new FontIcon(FontAwesomeSolid.HOME));
-        homeTab.setClosable(false);
         return homeTab;
     }
 
@@ -212,11 +206,17 @@ public class MainView {
 
         var delete = new MenuItem("Delete Transaction", new FontIcon(FontAwesomeSolid.TRASH));
         delete.setOnAction(event -> {
-            int selectedIndex = lv.getSelectionModel().getSelectedIndex();
-            if (selectedIndex != -1) {
-                Transaction removed = lv.getItems().remove(selectedIndex);
-                transactionService.deleteTransactionById(removed.getId());
-            }
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this transaction?", ButtonType.NO, ButtonType.YES);
+            alert.setHeaderText("Delete Transaction");
+            alert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.YES) {
+                    Transaction selected = lv.getSelectionModel().getSelectedItem();
+                    if (selected != null) {
+                        transactionList.remove(selected);
+                        transactionService.deleteTransactionById(selected.getId());
+                    }
+                }
+            });
         });
 
         return new ContextMenu(edit, delete);

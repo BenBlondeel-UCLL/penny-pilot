@@ -4,12 +4,13 @@ import edu.troy.pennypilot.model.ExpenseCategory;
 import edu.troy.pennypilot.model.IncomeCategory;
 import edu.troy.pennypilot.model.Transaction;
 import edu.troy.pennypilot.model.TransactionType;
+import edu.troy.pennypilot.support.AmountStringConverter;
+import edu.troy.pennypilot.support.BindingUtil;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.util.converter.FloatStringConverter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -18,11 +19,11 @@ public class TransactionDialog extends Dialog<Transaction> {
     private DatePicker date;
     private RadioButton income;
     private ChoiceBox<Enum> category;
-    private TextFormatter<Float> formatter = new TextFormatter<>(new FloatStringConverter(), 0f, change -> change.getControlNewText().matches("\\d{0,15}(\\.\\d{0,2})?") ? change : null);
+    private TextFormatter<Float> formatter = new TextFormatter<>(new AmountStringConverter(), 0f, change -> change.getControlNewText().matches("\\d{0,15}(\\.\\d{0,2})?") ? change : null);
 
     public TransactionDialog(Transaction transaction) {
         setTitle("Transaction dialog");
-        getDialogPane().setHeaderText("Create transaction");
+        getDialogPane().setHeaderText((transaction == null ? "Add" : "Edit") + " transaction");
         buildUi(transaction);
 
         // Convert result to transaction when SAVE button is clicked
@@ -97,6 +98,12 @@ public class TransactionDialog extends Dialog<Transaction> {
         GridPane.setColumnSpan(category, 2);
 
         getDialogPane().setContent(form);
-        getDialogPane().getButtonTypes().addAll(new ButtonType("SAVE", ButtonData.OK_DONE), ButtonType.CANCEL);
+        ButtonType save = new ButtonType("SAVE", ButtonData.OK_DONE);
+        getDialogPane().getButtonTypes().addAll(save, ButtonType.CANCEL);
+        getDialogPane().lookupButton(save).disableProperty().bind(
+                date.valueProperty().isNull()
+                        .or(BindingUtil.isBlank(description.textProperty()))
+                        .or(category.valueProperty().isNull())
+        );
     }
 }

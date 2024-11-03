@@ -1,0 +1,12 @@
+.home {
+    -fx-background-image: url('/images/money.jpg');
+    -fx-background-size: stretch;
+}
+
+#income {
+    -fx-fill: linear-gradient(to bottom right, green, orange);
+    -fx-font-size: 60px;
+    -fx-font-weight: bold;
+    /*-fx-font-family: Century Schoolbook;*/
+    -fx-effect: dropshadow(gaussian, navajowhite, 10, .5, 3, 3);
+}
