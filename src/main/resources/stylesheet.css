@@ -1,3 +1,10 @@
+/*
+    Reference guide
+    https://openjfx.io/javadoc/21/javafx.graphics/javafx/scene/doc-files/cssref.html
+    Youtube tutorial
+    https://www.youtube.com/watch?v=1qVEuRhx27Q
+*/
+
 .home {
     -fx-background-image: url('/images/money.jpg');
     -fx-background-size: stretch;
