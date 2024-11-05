@@ -1,5 +1,6 @@
 package edu.troy.pennypilot.service;
 
+import edu.troy.pennypilot.model.ExpenseCategory;
 import edu.troy.pennypilot.model.Transaction;
 import edu.troy.pennypilot.model.TransactionType;
 import edu.troy.pennypilot.repo.TransactionRepo;
@@ -28,6 +29,13 @@ public class TransactionService {
 
     public float getTotalThisMonth(TransactionType type){
         return transactionRepo.findByTypeAndDateBetween(type, LocalDate.now().withDayOfMonth(1), LocalDate.now().withDayOfMonth(LocalDate.now().lengthOfMonth()))
+                .stream()
+                .map(Transaction::getAmount)
+                .reduce(0.0f, Float::sum);
+    }
+
+    public float getTotalExpensesThisMonthFromCategory(ExpenseCategory category) {
+        return transactionRepo.findByExpenseCategoryAndDateBetween(category, LocalDate.now().withDayOfMonth(1), LocalDate.now().withDayOfMonth(LocalDate.now().lengthOfMonth()))
                 .stream()
                 .map(Transaction::getAmount)
                 .reduce(0.0f, Float::sum);

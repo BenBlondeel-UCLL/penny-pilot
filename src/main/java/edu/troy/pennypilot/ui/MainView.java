@@ -41,7 +41,7 @@ public class MainView {
     @EventListener
     void onStageReady(JavaFxApplication.StageReadyEvent event) {
         Scene scene = new Scene(getRoot(), 800, 600);
-        scene.getStylesheets().add("stylesheet.css");
+        scene.getStylesheets().add("/stylesheet.css");
 
         Stage stage = event.getStage();
         stage.setTitle("Penny Pilot");
@@ -117,17 +117,21 @@ public class MainView {
         add.setOnAction(actionEvent -> new BudgetDialog(null).showAndWait().ifPresent(response -> {
             log.info("Budget: {}", response);
             Budget budget = budgetService.addBudget(response);
-            tiles.getChildren().add(new BudgetTile(budget));
+            tiles.getChildren().add(new BudgetTile(budget, transactionService.getTotalExpensesThisMonthFromCategory(budget.getExpenseCategory())));
         }));
 
         BorderPane budgetPane = new BorderPane(tiles);
         budgetPane.setBottom(add);
-        List<Budget> budgetList = budgetService.getAllBudgets();
-        budgetList.forEach(budget -> { 
-            tiles.getChildren().add(new BudgetTile(budget));
-        });
-
         Tab budgetTab = new Tab("Budget", budgetPane);
+        budgetTab.setOnSelectionChanged(event -> {
+            if (budgetTab.isSelected()) {
+                tiles.getChildren().clear();
+                List<Budget> budgetList = budgetService.getAllBudgets();
+                budgetList.forEach(budget -> { 
+                    tiles.getChildren().add(new BudgetTile(budget, transactionService.getTotalExpensesThisMonthFromCategory(budget.getExpenseCategory())));
+                });
+            }
+        });
         budgetTab.setClosable(false);
         budgetTab.setGraphic(new FontIcon(FontAwesomeSolid.COINS));
         return budgetTab;

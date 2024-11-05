@@ -31,6 +31,6 @@ public class Transaction {
     }
 
     public String toString() {
-        return "Date: " + date + " Type: " + (type==type.INCOME ? incomeCategory : expenseCategory) + " Amount: " + amount + " Description: " + description;
+        return "Date: " + date + " Type: " + (type==TransactionType.INCOME ? incomeCategory : expenseCategory) + " Amount: " + amount + " Description: " + description;
     }
 }

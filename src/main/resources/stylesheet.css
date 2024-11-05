@@ -17,3 +17,33 @@
     /*-fx-font-family: Century Schoolbook;*/
     -fx-effect: dropshadow(gaussian, navajowhite, 10, .5, 3, 3);
 }
+
+/* .chart .chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+.chart .chart-vertical-grid-lines,
+.chart .chart-horizontal-grid-lines {
+    -fx-stroke: black;
+} */
+
+.chart .default-color0.chart-bar { 
+    -fx-bar-fill: blue;
+}
+
+.chart .default-color1.chart-bar { 
+    -fx-bar-fill: green;
+}
+
+/* .chart .axis {
+    -fx-tick-label-fill: black; 
+    -fx-tick-mark-stroke: black; 
+}
+
+.chart .chart-vertical-zero-line{
+    -fx-stroke: black;
+}
+
+.chart .chart-horizontal-zero-line{
+    -fx-stroke: black;
+} */

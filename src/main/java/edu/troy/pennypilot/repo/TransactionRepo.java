@@ -1,5 +1,6 @@
 package edu.troy.pennypilot.repo;
 
+import edu.troy.pennypilot.model.ExpenseCategory;
 import edu.troy.pennypilot.model.Transaction;
 import edu.troy.pennypilot.model.TransactionType;
 
@@ -19,6 +20,12 @@ public interface TransactionRepo extends JpaRepository<Transaction, Long> {
     
     List<Transaction> findByTypeAndDateBetween(
         @Param("type") TransactionType type, 
+        @Param("startDate") LocalDate startDate, 
+        @Param("endDate") LocalDate endDate
+    );
+
+    List<Transaction> findByExpenseCategoryAndDateBetween(
+        @Param("category") ExpenseCategory category, 
         @Param("startDate") LocalDate startDate, 
         @Param("endDate") LocalDate endDate
     );
