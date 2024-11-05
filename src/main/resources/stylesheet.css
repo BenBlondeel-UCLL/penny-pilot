@@ -18,32 +18,48 @@
     -fx-effect: dropshadow(gaussian, navajowhite, 10, .5, 3, 3);
 }
 
-/* .chart .chart-plot-background {
+.budget-button-bar {
+    -fx-background-color: antiquewhite;
+}
+
+/*
+ charts https://docs.oracle.com/javase/8/javafx/user-interface-tutorial/css-styles.htm
+*/
+.chart {
+    -fx-background-color: antiquewhite;
+}
+
+.chart-title {
+    -fx-text-fill: linear-gradient(to bottom right, dodgerblue, red);
+    -fx-font-weight: bold;
+    /*-fx-font-size: 1.6em;*/
+}
+
+.chart-plot-background {
     -fx-background-color: transparent;
 }
 
-.chart .chart-vertical-grid-lines,
-.chart .chart-horizontal-grid-lines {
-    -fx-stroke: black;
-} */
-
-.chart .default-color0.chart-bar { 
-    -fx-bar-fill: blue;
+.chart-vertical-grid-lines {
+    -fx-stroke: salmon;
 }
 
-.chart .default-color1.chart-bar { 
-    -fx-bar-fill: green;
+.chart-horizontal-grid-lines {
+    -fx-stroke: salmon;
 }
 
-/* .chart .axis {
-    -fx-tick-label-fill: black; 
-    -fx-tick-mark-stroke: black; 
+.axis {
+    -fx-font-size: 2em;
+    -fx-font-weight: bold;
+    -fx-tick-label-fill: firebrick;
 }
 
-.chart .chart-vertical-zero-line{
+.axis-tick-mark {
     -fx-stroke: black;
 }
 
-.chart .chart-horizontal-zero-line{
+.axis-minor-tick-mark {
     -fx-stroke: black;
-} */
+}
+
+.data0.chart-bar { -fx-bar-fill: dodgerblue; }
+.data1.chart-bar { -fx-bar-fill: mediumseagreen ; }

@@ -117,7 +117,7 @@ public class MainView {
         add.setOnAction(actionEvent -> new BudgetDialog(null).showAndWait().ifPresent(response -> {
             log.info("Budget: {}", response);
             Budget budget = budgetService.addBudget(response);
-            tiles.getChildren().add(new BudgetTile(budget, transactionService.getTotalExpensesThisMonthFromCategory(budget.getExpenseCategory())));
+            tiles.getChildren().add(new BudgetTile(budget, transactionService.getAllExpenseTransactions()));
         }));
 
         BorderPane budgetPane = new BorderPane(tiles);
@@ -126,10 +126,10 @@ public class MainView {
         budgetTab.setOnSelectionChanged(event -> {
             if (budgetTab.isSelected()) {
                 tiles.getChildren().clear();
-                List<Budget> budgetList = budgetService.getAllBudgets();
-                budgetList.forEach(budget -> { 
-                    tiles.getChildren().add(new BudgetTile(budget, transactionService.getTotalExpensesThisMonthFromCategory(budget.getExpenseCategory())));
-                });
+                List<Transaction> expenses = transactionService.getAllExpenseTransactions();
+                budgetService.getAllBudgets().forEach(budget ->
+                        tiles.getChildren().add(new BudgetTile(budget, expenses))
+                );
             }
         });
         budgetTab.setClosable(false);
