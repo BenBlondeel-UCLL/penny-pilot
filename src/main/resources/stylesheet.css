@@ -25,11 +25,11 @@
 /*
  charts https://docs.oracle.com/javase/8/javafx/user-interface-tutorial/css-styles.htm
 */
-.chart {
+.bar-chart {
     -fx-background-color: antiquewhite;
 }
 
-.chart-title {
+.bar-chart .chart-title {
     -fx-text-fill: linear-gradient(to bottom right, dodgerblue, red);
     -fx-font-weight: bold;
     /*-fx-font-size: 1.6em;*/
