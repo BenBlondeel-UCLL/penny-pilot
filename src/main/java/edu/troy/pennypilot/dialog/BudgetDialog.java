@@ -38,6 +38,11 @@ public class BudgetDialog extends Dialog<Budget> {
     private void uiBuilder(Budget budget) {
         expenseCategory = new ChoiceBox<>(FXCollections.observableArrayList(ExpenseCategory.values()));
         amount = new TextField();
+        if (budget != null) {
+            expenseCategory.setValue(budget.getExpenseCategory());
+            amount.setText(String.valueOf(budget.getAmount()));
+            expenseCategory.setDisable(true);
+        }
 
         getDialogPane().setContent(new VBox(new Label("Category: "), expenseCategory, new Label("Amount: "), amount));
         getDialogPane().getButtonTypes().addAll(new ButtonType("SAVE", ButtonData.OK_DONE), ButtonType.CANCEL);

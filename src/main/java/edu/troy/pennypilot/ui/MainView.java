@@ -29,6 +29,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -68,7 +69,7 @@ public class MainView {
         homeTab.setClosable(false);
         homeTab.setOnSelectionChanged(event -> {
             if (homeTab.isSelected()) {
-                text.setText("Income: " + transactionService.getTotalThisMonth(TransactionType.INCOME));
+                text.setText("PENNY PILOT"); //+ transactionService.getTotalThisMonth(TransactionType.INCOME));
             }
         });
 
@@ -113,11 +114,21 @@ public class MainView {
 
     Tab budgetTab(){
         FlowPane tiles = new FlowPane();
+        Consumer<BudgetTile> deleteAction = tile -> {
+            budgetService.deleteBudgetById(tile.getBudget().getId());
+            tiles.getChildren().remove(tile);
+        };
+        Consumer<BudgetTile> editAction = tile -> {
+            new BudgetDialog(tile.getBudget()).showAndWait().ifPresent(response -> { 
+                Budget budget = budgetService.updateBudget(response.getId(), response.getAmount());             
+                tile.setBudget(budget);
+            });
+        };
         Button add = new Button("Add", new FontIcon(FontAwesomeSolid.PLUS_CIRCLE));
         add.setOnAction(actionEvent -> new BudgetDialog(null).showAndWait().ifPresent(response -> {
             log.info("Budget: {}", response);
             Budget budget = budgetService.addBudget(response);
-            tiles.getChildren().add(new BudgetTile(budget, transactionService.getAllExpenseTransactions()));
+            tiles.getChildren().add(new BudgetTile(budget, transactionService.getAllExpenseTransactions(), deleteAction, editAction));
         }));
 
         BorderPane budgetPane = new BorderPane(tiles);
@@ -128,7 +139,7 @@ public class MainView {
                 tiles.getChildren().clear();
                 List<Transaction> expenses = transactionService.getAllExpenseTransactions();
                 budgetService.getAllBudgets().forEach(budget ->
-                        tiles.getChildren().add(new BudgetTile(budget, expenses))
+                        tiles.getChildren().add(new BudgetTile(budget, expenses, deleteAction, editAction))
                 );
             }
         });
