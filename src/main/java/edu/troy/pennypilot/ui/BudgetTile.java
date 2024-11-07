@@ -1,8 +1,9 @@
 package edu.troy.pennypilot.ui;
 
+import edu.troy.pennypilot.dialog.BudgetDialog;
 import edu.troy.pennypilot.model.Budget;
 import edu.troy.pennypilot.model.Transaction;
-import edu.troy.pennypilot.repo.BudgetRepo;
+import edu.troy.pennypilot.service.BudgetService;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -14,31 +15,35 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import lombok.extern.slf4j.Slf4j;
-
 import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 import org.kordamp.ikonli.javafx.FontIcon;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 @Slf4j
 public class BudgetTile extends BorderPane {
     private Budget budget;
     private List<Transaction> expenses;
+    private BudgetService budgetService;
 
-    public BudgetTile(Budget budget, List<Transaction> expenses, Consumer<BudgetTile> deletAction, Consumer<BudgetTile> editAction) {
-        this.budget = budget;
+    public BudgetTile(Budget budget, List<Transaction> expenses, BudgetService budgetService) {
         this.expenses = expenses;
+        this.budgetService = budgetService;
+
         setPrefHeight(250);
         setPrefWidth(250);
         setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
 
-        setTop(buttonBar(deletAction, editAction));
-        setBudget(budget);
+        updateBudget(budget);
+        setTop(buttonBar());
     }
 
-    Node chart(Budget budget, List<Transaction> expenses) {
+    void updateBudget(Budget budget) {
+        this.budget = budget;
+        setCenter(chart());
+    }
+
+    Node chart() {
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.getData().add(new XYChart.Data<>("Budget (" + budget.getAmount() + ')', budget.getAmount()));
         float sum = expenses.stream()
@@ -63,26 +68,24 @@ public class BudgetTile extends BorderPane {
         return chart;
     }
 
-    Parent buttonBar(Consumer<BudgetTile> deletActionCon, Consumer<BudgetTile> editAction) {
+    Parent buttonBar() {
         Button edit = new Button("", new FontIcon(FontAwesomeSolid.EDIT));
-        edit.setOnAction(e -> editAction.accept(this));
+        edit.setOnAction(e -> new BudgetDialog(budget).showAndWait().ifPresent(response -> {
+                Budget budget = budgetService.updateBudget(response.getId(), response.getAmount());
+                updateBudget(budget);
+            })
+        );
 
         Button delete = new Button("", new FontIcon(FontAwesomeSolid.TRASH));   
-        delete.setOnAction(e -> deletActionCon.accept(this));
+        delete.setOnAction(e -> {
+            budgetService.deleteBudgetById(budget.getId());
+            ((Pane) getParent()).getChildren().remove(this);
+        });
 
         HBox buttonBar = new HBox(edit, delete);
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
         buttonBar.getStyleClass().add("budget-button-bar");
 
         return buttonBar;
-    }
-
-    public Budget getBudget() {
-        return budget;
-    }
-
-    public void setBudget(Budget budget) {
-        this.budget = budget;
-        setCenter(chart(budget, expenses));
     }
 }
