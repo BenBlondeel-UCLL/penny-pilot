@@ -87,6 +87,7 @@ public class MainView {
          }));
 
         ListView<Transaction> incomeListView = new ListView<>(incomeTransactionList);
+        incomeListView.setCellFactory(lv -> new TransactionListCell());
         incomeListView.setContextMenu(buildContextMenu(incomeListView, transactionList));
         ListView<Transaction> expenseListView = new ListView<>(expenseTransactionList);
         expenseListView.setContextMenu(buildContextMenu(expenseListView, transactionList));
