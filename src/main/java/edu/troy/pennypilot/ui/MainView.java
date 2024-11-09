@@ -7,9 +7,11 @@ import edu.troy.pennypilot.model.*;
 import edu.troy.pennypilot.service.BudgetService;
 import edu.troy.pennypilot.service.TransactionService;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
@@ -25,6 +27,7 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.util.EnumSet;
 import java.util.List;
 
 @Slf4j
@@ -111,18 +114,36 @@ public class MainView {
 
     Tab budgetTab(){
         FlowPane tiles = new FlowPane();
+        var unusedCategories = EnumSet.allOf(ExpenseCategory.class);
+
         Button add = new Button("Add", new FontIcon(FontAwesomeSolid.PLUS_CIRCLE));
         add.setStyle("-fx-background-radius: 2em;");
-        add.setOnAction(actionEvent -> new BudgetDialog(null).showAndWait().ifPresent(response -> {
+        add.setOnAction(actionEvent -> new BudgetDialog(null, unusedCategories).showAndWait().ifPresent(response -> {
             log.info("Budget: {}", response);
             Budget budget = budgetService.addBudget(response);
             tiles.getChildren().add(new BudgetTile(budget, transactionService.getAllExpenseTransactions(), budgetService));
         }));
 
+        tiles.getChildren().addListener((ListChangeListener<Node>) change -> {
+            while (change.next()) {
+                if (change.wasAdded()) {
+                    change.getAddedSubList().stream()
+                            .map(BudgetTile.class::cast)
+                            .forEach(bt -> unusedCategories.remove(bt.getBudget().getExpenseCategory()));
+                } else if (change.wasRemoved()) {
+                    change.getRemoved().stream()
+                            .map(BudgetTile.class::cast)
+                            .forEach(bt -> unusedCategories.add(bt.getBudget().getExpenseCategory()));
+                }
+                add.setDisable(unusedCategories.isEmpty());
+            }
+        });
+
         BorderPane budgetPane = new BorderPane(tiles);
         budgetPane.setPadding(new Insets(5));
         budgetPane.setTop(add);
         BorderPane.setMargin(add, new Insets(5));
+
         Tab budgetTab = new Tab("Budget", budgetPane);
         budgetTab.setOnSelectionChanged(event -> {
             if (budgetTab.isSelected()) {

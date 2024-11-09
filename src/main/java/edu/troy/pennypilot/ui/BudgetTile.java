@@ -14,6 +14,7 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -22,6 +23,7 @@ import java.util.List;
 
 @Slf4j
 public class BudgetTile extends BorderPane {
+    @Getter
     private Budget budget;
     private List<Transaction> expenses;
     private BudgetService budgetService;
@@ -70,7 +72,7 @@ public class BudgetTile extends BorderPane {
 
     Parent buttonBar() {
         Button edit = new Button("", new FontIcon(FontAwesomeSolid.EDIT));
-        edit.setOnAction(e -> new BudgetDialog(budget).showAndWait().ifPresent(response -> {
+        edit.setOnAction(e -> new BudgetDialog(budget, List.of(budget.getExpenseCategory())).showAndWait().ifPresent(response -> {
                 Budget budget = budgetService.updateBudget(response.getId(), response.getAmount());
                 updateBudget(budget);
             })
