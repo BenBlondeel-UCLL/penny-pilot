@@ -1,9 +1,10 @@
-package edu.troy.pennypilot.ui;
+package edu.troy.pennypilot.budget.ui;
 
+import edu.troy.pennypilot.budget.persistence.Budget;
 import edu.troy.pennypilot.dialog.BudgetDialog;
-import edu.troy.pennypilot.model.Budget;
-import edu.troy.pennypilot.model.Transaction;
-import edu.troy.pennypilot.service.BudgetService;
+import edu.troy.pennypilot.transaction.persistence.Transaction;
+import javafx.collections.ListChangeListener;
+import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -24,25 +25,47 @@ import java.util.List;
 @Slf4j
 public class BudgetTile extends BorderPane {
     @Getter
-    private Budget budget;
-    private List<Transaction> expenses;
-    private BudgetService budgetService;
+    private final Budget budget;
+    private final FilteredList<Transaction> expenses;
+    private final List<BudgetListener> listeners;
 
-    public BudgetTile(Budget budget, List<Transaction> expenses, BudgetService budgetService) {
+    public BudgetTile(Budget budget, FilteredList<Transaction> expenses, List<BudgetListener> listeners) {
+        this.budget = budget;
         this.expenses = expenses;
-        this.budgetService = budgetService;
+        this.listeners = listeners;
 
         setPrefHeight(250);
         setPrefWidth(250);
         setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
 
-        updateBudget(budget);
         setTop(buttonBar());
+        updateBudget();
+
+        updateIfExpensesChanges();
     }
 
-    void updateBudget(Budget budget) {
-        this.budget = budget;
+    void updateBudget() {
         setCenter(chart());
+    }
+
+    void updateIfExpensesChanges() {
+        this.expenses.addListener((ListChangeListener<Transaction>) change -> {
+            while (change.next()) {
+                if (change.wasAdded()) {
+                    updateChangedExpenses(change.getAddedSubList());
+                } else if (change.wasRemoved()) {
+                    updateChangedExpenses(change.getRemoved());
+                }
+            }
+        });
+    }
+
+    void updateChangedExpenses(List<? extends Transaction> transactions) {
+        transactions.stream()
+                .map(Transaction::getExpenseCategory)
+                .filter(category -> category == budget.getExpenseCategory())
+                .findAny()
+                .ifPresent(c -> updateBudget());
     }
 
     Node chart() {
@@ -73,14 +96,13 @@ public class BudgetTile extends BorderPane {
     Parent buttonBar() {
         Button edit = new Button("", new FontIcon(FontAwesomeSolid.EDIT));
         edit.setOnAction(e -> new BudgetDialog(budget, List.of(budget.getExpenseCategory())).showAndWait().ifPresent(response -> {
-                Budget budget = budgetService.updateBudget(response.getId(), response.getAmount());
-                updateBudget(budget);
-            })
-        );
+            listeners.forEach(listener -> listener.budgetUpdated(response));
+            updateBudget();
+        }));
 
         Button delete = new Button("", new FontIcon(FontAwesomeSolid.TRASH));   
         delete.setOnAction(e -> {
-            budgetService.deleteBudgetById(budget.getId());
+            listeners.forEach(listener -> listener.budgetDeleted(budget));
             ((Pane) getParent()).getChildren().remove(this);
         });
 

@@ -1,4 +1,4 @@
-package edu.troy.pennypilot.service;
+package edu.troy.pennypilot.budget.service;
 
 import java.util.List;
 
@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import edu.troy.pennypilot.model.Budget;
-import edu.troy.pennypilot.repo.BudgetRepo;
+import edu.troy.pennypilot.budget.persistence.Budget;
+import edu.troy.pennypilot.budget.persistence.BudgetRepo;
 
 @Service
 @Transactional

@@ -1,4 +1,4 @@
-package edu.troy.pennypilot.model;
+package edu.troy.pennypilot.transaction.persistence;
 
 public enum TransactionType {
     INCOME,

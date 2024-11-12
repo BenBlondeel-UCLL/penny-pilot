@@ -1,5 +1,6 @@
-package edu.troy.pennypilot.model;
+package edu.troy.pennypilot.budget.persistence;
 
+import edu.troy.pennypilot.transaction.persistence.ExpenseCategory;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

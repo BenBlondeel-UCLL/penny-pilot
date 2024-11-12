@@ -1,9 +1,9 @@
-package edu.troy.pennypilot.service;
+package edu.troy.pennypilot.transaction.service;
 
-import edu.troy.pennypilot.model.ExpenseCategory;
-import edu.troy.pennypilot.model.Transaction;
-import edu.troy.pennypilot.model.TransactionType;
-import edu.troy.pennypilot.repo.TransactionRepo;
+import edu.troy.pennypilot.transaction.persistence.ExpenseCategory;
+import edu.troy.pennypilot.transaction.persistence.Transaction;
+import edu.troy.pennypilot.transaction.persistence.TransactionType;
+import edu.troy.pennypilot.transaction.persistence.TransactionRepo;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

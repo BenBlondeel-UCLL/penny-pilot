@@ -1,9 +1,8 @@
-package edu.troy.pennypilot.repo;
+package edu.troy.pennypilot.budget.persistence;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import edu.troy.pennypilot.model.Budget;
-import edu.troy.pennypilot.model.ExpenseCategory;
+import edu.troy.pennypilot.transaction.persistence.ExpenseCategory;
 
 
 public interface BudgetRepo extends JpaRepository<Budget, Long>{

@@ -1,4 +1,4 @@
-package edu.troy.pennypilot.model;
+package edu.troy.pennypilot.transaction.persistence;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

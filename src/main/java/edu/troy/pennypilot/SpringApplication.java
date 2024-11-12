@@ -1,9 +1,9 @@
 package edu.troy.pennypilot;
 
-import edu.troy.pennypilot.model.ExpenseCategory;
-import edu.troy.pennypilot.model.Transaction;
-import edu.troy.pennypilot.model.TransactionType;
-import edu.troy.pennypilot.service.TransactionService;
+import edu.troy.pennypilot.transaction.persistence.ExpenseCategory;
+import edu.troy.pennypilot.transaction.persistence.Transaction;
+import edu.troy.pennypilot.transaction.persistence.TransactionType;
+import edu.troy.pennypilot.transaction.service.TransactionService;
 import javafx.application.Application;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;

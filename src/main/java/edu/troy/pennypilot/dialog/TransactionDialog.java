@@ -1,9 +1,9 @@
 package edu.troy.pennypilot.dialog;
 
-import edu.troy.pennypilot.model.ExpenseCategory;
-import edu.troy.pennypilot.model.IncomeCategory;
-import edu.troy.pennypilot.model.Transaction;
-import edu.troy.pennypilot.model.TransactionType;
+import edu.troy.pennypilot.transaction.persistence.ExpenseCategory;
+import edu.troy.pennypilot.transaction.persistence.IncomeCategory;
+import edu.troy.pennypilot.transaction.persistence.Transaction;
+import edu.troy.pennypilot.transaction.persistence.TransactionType;
 import edu.troy.pennypilot.support.AmountStringConverter;
 import edu.troy.pennypilot.support.BindingUtil;
 import javafx.collections.FXCollections;

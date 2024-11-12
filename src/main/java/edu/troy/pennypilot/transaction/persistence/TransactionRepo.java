@@ -1,8 +1,4 @@
-package edu.troy.pennypilot.repo;
-
-import edu.troy.pennypilot.model.ExpenseCategory;
-import edu.troy.pennypilot.model.Transaction;
-import edu.troy.pennypilot.model.TransactionType;
+package edu.troy.pennypilot.transaction.persistence;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;

@@ -1,42 +1,48 @@
 package edu.troy.pennypilot.ui;
 
 import edu.troy.pennypilot.JavaFxApplication;
-import edu.troy.pennypilot.dialog.BudgetDialog;
-import edu.troy.pennypilot.dialog.TransactionDialog;
-import edu.troy.pennypilot.model.*;
-import edu.troy.pennypilot.service.BudgetService;
-import edu.troy.pennypilot.service.TransactionService;
+import edu.troy.pennypilot.budget.service.BudgetService;
+import edu.troy.pennypilot.budget.ui.BudgetController;
+import edu.troy.pennypilot.transaction.persistence.Transaction;
+import edu.troy.pennypilot.transaction.service.TransactionService;
+import edu.troy.pennypilot.transaction.ui.TransactionController;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
-import javafx.scene.control.*;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.util.EnumSet;
-import java.util.List;
+import java.util.Collection;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component
 public class MainView {
 
-    private final TransactionService transactionService;
-    private final BudgetService budgetService;
+    private final TransactionController transactionController;
+    private final BudgetController budgetController;
+
+    public MainView(TransactionService transactionService, BudgetService budgetService) {
+        this.transactionController = new TransactionController(transactionService);
+        this.budgetController = new BudgetController(budgetService, transactionController.getModel());
+    }
 
     @EventListener
     void onStageReady(JavaFxApplication.StageReadyEvent event) {
@@ -51,13 +57,16 @@ public class MainView {
     }
 
     Parent getRoot() {
-        
-        
-        return new TabPane(homeTab(), transactionTab(), budgetTab(), statisticsTab());
+        TabPane tabPane = new TabPane(homeTab(), transactionTab(), budgetTab(), statisticsTab());
+        // load data after listeners
+        transactionController.loadTransactions();
+        budgetController.loadBudgets();
+
+        return tabPane;
     }
 
     Tab homeTab() {
-        Text text = new Text();
+        Text text = new Text("PENNY PILOT");
         text.setId("income");
         var homePane = new BorderPane(text);
         homePane.getStyleClass().add("home");
@@ -66,46 +75,12 @@ public class MainView {
         Tab homeTab = new Tab("Home", homePane);
         homeTab.setGraphic(new FontIcon(FontAwesomeSolid.HOME));
         homeTab.setClosable(false);
-        homeTab.setOnSelectionChanged(event -> {
-            if (homeTab.isSelected()) {
-                text.setText("PENNY PILOT"); //+ transactionService.getTotalThisMonth(TransactionType.INCOME));
-            }
-        });
 
         return homeTab;
     }
 
     Tab transactionTab() {
-        // Transaction Tab
-        ObservableList<Transaction> transactionList = FXCollections.observableArrayList(transactionService.getAllTransactions());
-        FilteredList<Transaction> incomeTransactionList = new FilteredList<>(transactionList, transaction -> transaction.getType() == TransactionType.INCOME);
-        FilteredList<Transaction> expenseTransactionList = new FilteredList<>(transactionList, transaction -> transaction.getType() == TransactionType.EXPENSE);
-
-        // Create Transaction
-        Button create = new Button("Add", new FontIcon(FontAwesomeSolid.PLUS_CIRCLE));
-        create.setOnAction(actionEvent -> new TransactionDialog(null).showAndWait().ifPresent(response -> {
-             log.info("Transaction: {}", response);
-             transactionService.addTransaction(response);
-             transactionList.add(response);
-         }));
-
-        ListView<Transaction> incomeListView = new ListView<>(incomeTransactionList);
-        incomeListView.setCellFactory(lv -> new TransactionListCell());
-        incomeListView.setContextMenu(buildContextMenu(incomeListView, transactionList));
-        ListView<Transaction> expenseListView = new ListView<>(expenseTransactionList);
-        expenseListView.setContextMenu(buildContextMenu(expenseListView, transactionList));
-
-        GridPane pane = new GridPane(10,5);
-        pane.setPadding(new Insets(10));
-        pane.addRow(0, incomeListView, expenseListView);
-        pane.addRow(1, create);
-
-        GridPane.setHgrow(incomeListView, Priority.ALWAYS);
-        GridPane.setVgrow(incomeListView, Priority.ALWAYS);
-        GridPane.setHgrow(expenseListView, Priority.ALWAYS);
-        GridPane.setVgrow(expenseListView, Priority.ALWAYS);
-
-        Tab transactionTab = new Tab("Transactions", pane);
+        Tab transactionTab = new Tab("Transactions", transactionController.getView());
         transactionTab.setClosable(false);
         transactionTab.setGraphic(new FontIcon(FontAwesomeSolid.MONEY_BILL));
 
@@ -113,47 +88,7 @@ public class MainView {
     }
 
     Tab budgetTab(){
-        FlowPane tiles = new FlowPane();
-        var unusedCategories = EnumSet.allOf(ExpenseCategory.class);
-
-        Button add = new Button("Add", new FontIcon(FontAwesomeSolid.PLUS_CIRCLE));
-        add.setStyle("-fx-background-radius: 2em;");
-        add.setOnAction(actionEvent -> new BudgetDialog(null, unusedCategories).showAndWait().ifPresent(response -> {
-            log.info("Budget: {}", response);
-            Budget budget = budgetService.addBudget(response);
-            tiles.getChildren().add(new BudgetTile(budget, transactionService.getAllExpenseTransactions(), budgetService));
-        }));
-
-        tiles.getChildren().addListener((ListChangeListener<Node>) change -> {
-            while (change.next()) {
-                if (change.wasAdded()) {
-                    change.getAddedSubList().stream()
-                            .map(BudgetTile.class::cast)
-                            .forEach(bt -> unusedCategories.remove(bt.getBudget().getExpenseCategory()));
-                } else if (change.wasRemoved()) {
-                    change.getRemoved().stream()
-                            .map(BudgetTile.class::cast)
-                            .forEach(bt -> unusedCategories.add(bt.getBudget().getExpenseCategory()));
-                }
-                add.setDisable(unusedCategories.isEmpty());
-            }
-        });
-
-        BorderPane budgetPane = new BorderPane(tiles);
-        budgetPane.setPadding(new Insets(5));
-        budgetPane.setTop(add);
-        BorderPane.setMargin(add, new Insets(5));
-
-        Tab budgetTab = new Tab("Budget", budgetPane);
-        budgetTab.setOnSelectionChanged(event -> {
-            if (budgetTab.isSelected()) {
-                tiles.getChildren().clear();
-                List<Transaction> expenses = transactionService.getAllExpenseTransactions();
-                budgetService.getAllBudgets().forEach(budget ->
-                        tiles.getChildren().add(new BudgetTile(budget, expenses, budgetService))
-                );
-            }
-        });
+        Tab budgetTab = new Tab("Budget", budgetController.getView());
         budgetTab.setClosable(false);
         budgetTab.setGraphic(new FontIcon(FontAwesomeSolid.COINS));
 
@@ -161,91 +96,59 @@ public class MainView {
     }
 
     Tab statisticsTab() {
+        ObservableList<PieChart.Data> incomePieChartData = FXCollections.observableArrayList();
+        PieChart incomeChart = new PieChart(incomePieChartData);
+        incomeChart.setTitle("Income");
+        incomeChart.setLabelsVisible(false);
+
+        var incomeList = transactionController.getModel().getIncomeList();
+        updatePieChart(incomeList, Transaction::getIncomeCategory, incomePieChartData);
+
+        ObservableList<PieChart.Data> expensePieChartData = FXCollections.observableArrayList();
+        PieChart expenseChart = new PieChart(expensePieChartData);
+        expenseChart.setTitle("Expenses");
+        expenseChart.setLabelsVisible(false);
+
+        var expenseList = transactionController.getModel().getExpenselist();
+        updatePieChart(expenseList, Transaction::getExpenseCategory, expensePieChartData);
+
+        GridPane pane = new GridPane();
+        pane.setPadding(new Insets(10));
+        pane.addRow(0, incomeChart, expenseChart);
+        GridPane.setHgrow(incomeChart, Priority.ALWAYS);
+        GridPane.setVgrow(incomeChart, Priority.ALWAYS);
+        GridPane.setHgrow(expenseChart, Priority.ALWAYS);
+        GridPane.setVgrow(expenseChart, Priority.ALWAYS);
+
         // Statistics Tab
-        Tab statisticsTab = new Tab("Statistics");
+        Tab statisticsTab = new Tab("Statistics", pane);
         statisticsTab.setClosable(false);
         statisticsTab.setGraphic(new FontIcon(FontAwesomeSolid.CHART_PIE));
-        statisticsTab.setOnSelectionChanged(event -> {
-            if (statisticsTab.isSelected()) {
-                // income pie chart
-                ObservableList<PieChart.Data> incomePieChartData = FXCollections.observableArrayList();
-                List<Transaction> IncomeTransactions = transactionService.getAllIncomeTransactions();
-                double totalIncome = IncomeTransactions.stream().mapToDouble(Transaction::getAmount).sum();
-                for (IncomeCategory category : IncomeCategory.values()) {
-                    double categoryTotal = IncomeTransactions.stream()
-                            .filter(transaction -> transaction.getIncomeCategory() == category)
-                            .mapToDouble(Transaction::getAmount)
-                            .sum();
-                    if (categoryTotal != 0) {
-                        double percentage = (Math.abs(categoryTotal) / Math.abs(totalIncome)) * 100;
-                        incomePieChartData.add(new PieChart.Data(category.name() + ": " + String.format("%.2f", percentage) + "%", Math.abs(categoryTotal)));
-                    }
-                }
-                final PieChart incomeChart = new PieChart(incomePieChartData);
-                incomeChart.setTitle("Income");
-                incomeChart.setLabelsVisible(false);
-
-                // expense pie chart
-                ObservableList<PieChart.Data> expensePieChartData = FXCollections.observableArrayList();
-                List<Transaction> Expensetransactions = transactionService.getAllExpenseTransactions();
-                double totalExpenses = Expensetransactions.stream().mapToDouble(Transaction::getAmount).sum();
-                for (ExpenseCategory category : ExpenseCategory.values()) {
-                    double categoryTotal = Expensetransactions.stream()
-                            .filter(transaction -> transaction.getExpenseCategory() == category)
-                            .mapToDouble(Transaction::getAmount)
-                            .sum();
-                    if (categoryTotal != 0) {
-                        double percentage = (Math.abs(categoryTotal) / Math.abs(totalExpenses)) * 100;
-                        expensePieChartData.add(new PieChart.Data(category.name() + ": " + String.format("%.2f", percentage) + "%", Math.abs(categoryTotal)));
-                    }
-                }
-                final PieChart expenseChart = new PieChart(expensePieChartData);
-                expenseChart.setTitle("Expenses");
-                expenseChart.setLabelsVisible(false);
-
-                // add to grid pane
-                GridPane pane = new GridPane();
-                pane.setPadding(new Insets(10));
-                pane.addRow(0, incomeChart, expenseChart);
-                GridPane.setHgrow(incomeChart, Priority.ALWAYS);
-                GridPane.setVgrow(incomeChart, Priority.ALWAYS);
-                GridPane.setHgrow(expenseChart, Priority.ALWAYS);
-                GridPane.setVgrow(expenseChart, Priority.ALWAYS);
-                statisticsTab.setContent(pane);
-            }
-        });
 
         return statisticsTab;
     }
 
-    ContextMenu buildContextMenu(ListView<Transaction> lv, ObservableList<Transaction> transactionList) {
-        var edit = new MenuItem("Edit Transaction", new FontIcon(FontAwesomeSolid.EDIT));
-        edit.setOnAction(event -> {
-            Transaction selected = lv.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                log.info("Edit: {}", selected);
-                new TransactionDialog(selected).showAndWait().ifPresent(response -> {
-                    transactionService.addTransaction(response);
-                    transactionList.set(transactionList.indexOf(selected), response);
-                });
+    void updatePieChart(FilteredList<Transaction> transactionList, Function<Transaction, Enum<?>> groupByCategory, ObservableList<PieChart.Data> pieChartData) {
+        transactionList.addListener((ListChangeListener<Transaction>) c -> {
+            while (c.next()) {
+                if (c.wasAdded() || c.wasRemoved()) {
+                    pieChartData.clear();
+                    float total = sum(transactionList);
+                    transactionList.stream()
+                            .collect(Collectors.groupingBy(groupByCategory))
+                            .forEach((category, transactionsForCategory) -> {
+                                float sum = sum(transactionsForCategory);
+                                if (sum != 0) {
+                                    double percentage = sum * 100 / total;
+                                    pieChartData.add(new PieChart.Data(category.name() + ": " + String.format("%.2f", percentage) + "%", sum));
+                                }
+                            });
+                }
             }
         });
+    }
 
-        var delete = new MenuItem("Delete Transaction", new FontIcon(FontAwesomeSolid.TRASH));
-        delete.setOnAction(event -> {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this transaction?", ButtonType.NO, ButtonType.YES);
-            alert.setHeaderText("Delete Transaction");
-            alert.showAndWait().ifPresent(response -> {
-                if (response == ButtonType.YES) {
-                    Transaction selected = lv.getSelectionModel().getSelectedItem();
-                    if (selected != null) {
-                        transactionList.remove(selected);
-                        transactionService.deleteTransactionById(selected.getId());
-                    }
-                }
-            });
-        });
-
-        return new ContextMenu(edit, delete);
+    float sum(Collection<Transaction> transactions) {
+        return transactions.stream().map(Transaction::getAmount).reduce(0.0f, Float::sum);
     }
 }
