@@ -15,4 +15,7 @@ spring:
     open-in-view: false
   flyway:
     enabled: false
+  threads:
+    virtual:
+      enabled: true
 
