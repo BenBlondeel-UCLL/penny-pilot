@@ -1,6 +1,7 @@
 package edu.troy.pennypilot.transaction.ui;
 
 import edu.troy.pennypilot.transaction.persistence.Transaction;
+import edu.troy.pennypilot.transaction.persistence.TransactionType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.image.Image;
@@ -45,7 +46,11 @@ public class TransactionListCell extends ListCell<Transaction> {
             date.setText(formatter.format(item.getDate()));
             amount.setText(String.format("$%.2f", item.getAmount()));
             description.setText(item.getDescription());
-
+            if (item.getType()== TransactionType.INCOME) {
+                imageView.setImage(new Image(getClass().getResourceAsStream("/images/income/"+item.getIncomeCategory().toString().toLowerCase()+".png")));
+            } else {
+                imageView.setImage(new Image(getClass().getResourceAsStream("/images/expense/"+item.getExpenseCategory().toString().toLowerCase()+".png")));
+            }
             setGraphic(grid);
         }
     }

@@ -37,11 +37,13 @@ public class TransactionView extends GridPane {
         incomeListView.setContextMenu(buildContextMenu(incomeListView));
 
         ListView<Transaction> expenseListView = new ListView<>(model.getExpenselist());
+        expenseListView.setCellFactory(lv -> new TransactionListCell());
         expenseListView.setContextMenu(buildContextMenu(expenseListView));
 
         setPadding(new Insets(10));
-        addRow(0, incomeListView, expenseListView);
-        addRow(1, create);
+        addRow(0, new Label("Income"), new Label("Expenses"));
+        addRow(1, incomeListView, expenseListView);
+        addRow(2, create);
 
         GridPane.setHgrow(incomeListView, Priority.ALWAYS);
         GridPane.setVgrow(incomeListView, Priority.ALWAYS);
