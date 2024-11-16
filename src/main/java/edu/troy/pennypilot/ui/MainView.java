@@ -14,6 +14,7 @@ import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.chart.Chart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -53,7 +54,7 @@ public class MainView {
         Stage stage = event.getStage();
         stage.setTitle("Penny Pilot");
         stage.setScene(scene);
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/money.jpg")));
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/logo.png")));
         stage.show();
     }
 
@@ -67,9 +68,9 @@ public class MainView {
     }
 
     Tab homeTab() {
-        Text text = new Text("PENNY PILOT");
-        text.setId("income");
-        var homePane = new BorderPane(text);
+        //Text text = new Text("PENNY PILOT");
+        //text.setId("income");
+        var homePane = new BorderPane(); //text
         homePane.getStyleClass().add("home");
 
         // Home Tab

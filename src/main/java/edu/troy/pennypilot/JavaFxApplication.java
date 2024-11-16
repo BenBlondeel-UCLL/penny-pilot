@@ -53,7 +53,7 @@ public class JavaFxApplication extends Application {
     }
 
     void showSplashScreen(Stage stage, Task task) {
-        ImageView splash = new ImageView(new Image(getClass().getResourceAsStream("/images/splash.png")));
+        ImageView splash = new ImageView(new Image(getClass().getResourceAsStream("/images/logo.png")));
         splash.setFitHeight(600);
         var loadProgress = new ProgressBar(0);
         loadProgress.setPrefWidth(800);
