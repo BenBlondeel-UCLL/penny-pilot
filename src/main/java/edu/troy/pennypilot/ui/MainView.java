@@ -6,6 +6,7 @@ import edu.troy.pennypilot.budget.ui.BudgetController;
 import edu.troy.pennypilot.transaction.persistence.Transaction;
 import edu.troy.pennypilot.transaction.service.TransactionService;
 import edu.troy.pennypilot.transaction.ui.TransactionController;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -96,20 +97,20 @@ public class MainView {
     }
 
     Tab statisticsTab() {
+        var incomeList = transactionController.getModel().getIncomeList();
         ObservableList<PieChart.Data> incomePieChartData = FXCollections.observableArrayList();
         PieChart incomeChart = new PieChart(incomePieChartData);
-        incomeChart.setTitle("Income");
+        incomeChart.titleProperty().bind(Bindings.createStringBinding(() -> String.format("Income: %,.2f", sum(incomeList)), incomeList));
         incomeChart.setLabelsVisible(false);
 
-        var incomeList = transactionController.getModel().getIncomeList();
         updatePieChart(incomeList, Transaction::getIncomeCategory, incomePieChartData);
 
+        var expenseList = transactionController.getModel().getExpenselist();
         ObservableList<PieChart.Data> expensePieChartData = FXCollections.observableArrayList();
         PieChart expenseChart = new PieChart(expensePieChartData);
-        expenseChart.setTitle("Expenses");
+        expenseChart.titleProperty().bind(Bindings.createStringBinding(() -> String.format("Expenses: %,.2f", sum(expenseList)), expenseList));
         expenseChart.setLabelsVisible(false);
 
-        var expenseList = transactionController.getModel().getExpenselist();
         updatePieChart(expenseList, Transaction::getExpenseCategory, expensePieChartData);
 
         GridPane pane = new GridPane();
