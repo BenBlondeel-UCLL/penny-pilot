@@ -30,7 +30,7 @@ public class TransactionView extends GridPane {
         Button create = new Button("Add", new FontIcon(FontAwesomeSolid.PLUS_CIRCLE));
         create.setOnAction(actionEvent -> new TransactionDialog(null).showAndWait().ifPresent(response -> {
             listeners.forEach(listener -> listener.transactionAdded(response));
-         }));
+        }));
 
         ListView<Transaction> incomeListView = new ListView<>(model.getIncomeList());
         incomeListView.setCellFactory(lv -> new TransactionListCell());

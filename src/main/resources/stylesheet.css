@@ -6,7 +6,7 @@
 */
 
 .home {
-    -fx-background-image: url('/images/money.jpg');
+    -fx-background-image: url('/images/logo.png');
     -fx-background-size: stretch;
 }
 
