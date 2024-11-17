@@ -102,6 +102,7 @@ public class TransactionDialog extends Dialog<Transaction> {
         getDialogPane().getButtonTypes().addAll(save, ButtonType.CANCEL);
         getDialogPane().lookupButton(save).disableProperty().bind(
                 date.valueProperty().isNull()
+                        .or(amount.textProperty().isEmpty())
                         .or(BindingUtil.isBlank(description.textProperty()))
                         .or(category.valueProperty().isNull())
         );

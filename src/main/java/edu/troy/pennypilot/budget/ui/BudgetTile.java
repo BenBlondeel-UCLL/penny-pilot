@@ -12,7 +12,9 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import lombok.Getter;
@@ -102,8 +104,14 @@ public class BudgetTile extends BorderPane {
 
         Button delete = new Button("", new FontIcon(FontAwesomeSolid.TRASH));   
         delete.setOnAction(e -> {
-            listeners.forEach(listener -> listener.budgetDeleted(budget));
-            ((Pane) getParent()).getChildren().remove(this);
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this budget?", ButtonType.NO, ButtonType.YES);
+            alert.setHeaderText("Delete Budget");
+            alert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.YES) {
+                    listeners.forEach(listener -> listener.budgetDeleted(budget));
+                    ((Pane) getParent()).getChildren().remove(this);
+                }
+            });
         });
 
         HBox buttonBar = new HBox(edit, delete);

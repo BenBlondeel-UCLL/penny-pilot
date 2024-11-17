@@ -28,6 +28,7 @@ public class TransactionView extends GridPane {
 
     void buildUI() {
         Button create = new Button("Add", new FontIcon(FontAwesomeSolid.PLUS_CIRCLE));
+        create.getStyleClass().add("add-button");
         create.setOnAction(actionEvent -> new TransactionDialog(null).showAndWait().ifPresent(response -> {
             listeners.forEach(listener -> listener.transactionAdded(response));
         }));
@@ -41,9 +42,9 @@ public class TransactionView extends GridPane {
         expenseListView.setContextMenu(buildContextMenu(expenseListView));
 
         setPadding(new Insets(10));
-        addRow(0, new Label("Income"), new Label("Expenses"));
-        addRow(1, incomeListView, expenseListView);
-        addRow(2, create);
+        addRow(0, create);
+        addRow(1, new Label("Income"), new Label("Expenses"));
+        addRow(2, incomeListView, expenseListView);
 
         GridPane.setHgrow(incomeListView, Priority.ALWAYS);
         GridPane.setVgrow(incomeListView, Priority.ALWAYS);

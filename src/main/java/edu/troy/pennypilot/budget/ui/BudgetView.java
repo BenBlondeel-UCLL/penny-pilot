@@ -32,7 +32,7 @@ public class BudgetView extends BorderPane {
     void buildUI() {
 
         Button add = new Button("Add", new FontIcon(FontAwesomeSolid.PLUS_CIRCLE));
-        add.setStyle("-fx-background-radius: 2em;");
+        add.getStyleClass().add("add-button");
         add.setOnAction(actionEvent -> new BudgetDialog(null, model.getUnusedCategories()).showAndWait().ifPresent(response -> {
             listeners.forEach(listener -> listener.budgetAdded(response));
         }));
